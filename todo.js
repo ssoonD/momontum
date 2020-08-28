@@ -32,7 +32,6 @@ function itemSaveFactory(key) {
         // 오직 string만 저장할 수 있음
         // 그래서 toDos를 그냥 넣으면 Object로 들어감
         // JSON.stringify : 자바스크립트 Object를 string으로 바꿔준다. 
-        console.log(key);
         localStorage.setItem(key, JSON.stringify(data[key]));
     }
 
@@ -61,8 +60,6 @@ function itemPaintFactory(domList, key) {
         const span = document.createElement("span");
         const newId = data[key].length + 1;
 
-        console.log(key);
-        console.log(TODOS_LS);
         if (key === TODOS_LS) {
             delBtn.innerText = "❌";
             delBtn.addEventListener("click", itemDeleteFactory(domList, key));
