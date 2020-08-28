@@ -39,8 +39,10 @@ function paintGreeting(text) {
 
 // currentUser 삭제 
 function removeName() {
+    // hiding greeting
     greeting.classList.remove(SHOWING_CN);
     localStorage.removeItem(USER_LS);
+    // adding form
     form.classList.add(SHOWING_CN);
     input.value = "";
 }
