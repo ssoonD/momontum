@@ -6,124 +6,98 @@ const toDoForm = document.querySelector(".js-toDoForm"),
 const TODOS_LS = "toDos",
     DONES_LS = "dones";
 
-let toDos = [],
-    dones = [];
-
-function deleteToDo(event, list) {
-    const btn = event.target;
-    const li = btn.parentNode;
-    toDoList.removeChild(li);
-
-    const cleanToDos = toDos.filter(function (toDo) {
-        return toDo.id !== parseInt(li.id);
-    });
-    toDos = cleanToDos;
-    saveToDos();
+const data = {
+    toDos: [],
+    dones: []
 }
 
+function itemDeleteFactory(domList, key) {
+    function deleteItem(event) {
+        const btn = event.target;
+        const li = btn.parentNode;
+        domList.removeChild(li);
 
-function deleteDone(event) {
-    const btn = event.target;
-    const li = btn.parentNode;
-    doneList.removeChild(li);
+        data[key] = data[key].filter(function (item) {
+            return item.id !== parseInt(li.id);
+        });
+        itemSaveFactory(key)();
+    }
 
-    const cleanDones = dones.filter(function (done) {
-        return done.id !== parseInt(li.id);
-    });
-    dones = cleanDones;
-    saveDones();
+    return deleteItem;
 }
 
-function saveToDos() {
-    // local storage에는 자바스크립트의 data를 저장할 수 없다. 
-    // 오직 string만 저장할 수 있음
-    // 그래서 toDos를 그냥 넣으면 Object로 들어감
-    // JSON.stringify : 자바스크립트 Object를 string으로 바꿔준다. 
-    localStorage.setItem(TODOS_LS, JSON.stringify(toDos));
+function itemSaveFactory(key) {
+    function saveItem() {
+        // local storage에는 자바스크립트의 data를 저장할 수 없다. 
+        // 오직 string만 저장할 수 있음
+        // 그래서 toDos를 그냥 넣으면 Object로 들어감
+        // JSON.stringify : 자바스크립트 Object를 string으로 바꿔준다. 
+        console.log(key);
+        localStorage.setItem(key, JSON.stringify(data[key]));
+    }
+
+    return saveItem;
 }
 
-function saveDones() {
-    localStorage.setItem(DONES_LS, JSON.stringify(dones));
+function itemChangeFactory(domList, changeList, key, changekey) {
+    function changeItem(event) {
+        const btn = event.target;
+        const li = btn.parentNode;
+        // 해당 event 삭제 
+        itemDeleteFactory(domList, key)(event);
+        // 해당 event의 text를 done에 추가 
+        itemPaintFactory(changeList, changekey)(li.querySelector("span").innerText);
+    }
+
+    return changeItem;
 }
 
-function toDoToDone(event) {
-    const btn = event.target;
-    const li = btn.parentNode;
-    // 해당 event 삭제 
-    deleteToDo(event);
-    // 해당 event의 text를 done에 추가 
-    paintDone(li.querySelector("span").innerText);
-}
+function itemPaintFactory(domList, key) {
+    function paintItem(text) {
+        // 원하는 것을 생성 
+        const li = document.createElement("li");
+        const delBtn = document.createElement("button");
+        const doneBtn = document.createElement("button");
+        const span = document.createElement("span");
+        const newId = data[key].length + 1;
 
-function doneToToDO() {
-    const btn = event.target;
-    const li = btn.parentNode;
-    deleteDone(event);
-    paintToDo(li.querySelector("span").innerText);
-}
+        console.log(key);
+        console.log(TODOS_LS);
+        if (key === TODOS_LS) {
+            delBtn.innerText = "❌";
+            delBtn.addEventListener("click", itemDeleteFactory(domList, key));
+            doneBtn.innerText = "⭕";
+            doneBtn.addEventListener("click", itemChangeFactory(domList, doneList, key, DONES_LS));
+        } else {
+            delBtn.innerText = "✅";
+            delBtn.addEventListener("click", itemDeleteFactory(domList, key));
+            doneBtn.innerText = "🔙";
+            doneBtn.addEventListener("click", itemChangeFactory(domList, toDoList, key, TODOS_LS));
+        }
+        span.innerText = ` ${text} `;
 
-function paintToDo(text) {
-    // 원하는 것을 생성 
-    const li = document.createElement("li");
-    const delBtn = document.createElement("button");
-    const doneBtn = document.createElement("button");
-    const span = document.createElement("span");
-    const newId = toDos.length + 1;
+        // appendChild : 선탣한 요소 안에 자식 요소를 추가  
+        li.appendChild(span);
+        li.appendChild(delBtn);
+        li.appendChild(doneBtn);
+        li.id = newId;
+        domList.appendChild(li);
 
-    delBtn.innerText = "❌";
-    delBtn.addEventListener("click", deleteToDo);
-    doneBtn.innerText = "⭕";
-    doneBtn.addEventListener("click", toDoToDone)
-    span.innerText = ` ${text} `;
+        const itemObj = {
+            text: text,
+            id: newId
+        };
+        data[key].push(itemObj);
+        itemSaveFactory(key)();
+    }
 
-    // appendChild : 선탣한 요소 안에 자식 요소를 추가  
-    li.appendChild(span);
-    li.appendChild(delBtn);
-    li.appendChild(doneBtn);
-    li.id = newId;
-    toDoList.appendChild(li);
-
-    const toDoObj = {
-        text: text,
-        id: newId
-    };
-    toDos.push(toDoObj);
-    saveToDos();
-}
-
-function paintDone(text) {
-    // 원하는 것을 생성 
-    const li = document.createElement("li");
-    const delBtn = document.createElement("button");
-    const backBtn = document.createElement("button");
-    const span = document.createElement("span");
-    const newId = toDos.length + 1;
-
-    delBtn.innerText = "✅";
-    delBtn.addEventListener("click", deleteDone);
-    backBtn.innerText = "🔙";
-    backBtn.addEventListener("click", doneToToDO);
-    span.innerText = ` ${text} `;
-
-    // appendChild : 선탣한 요소 안에 자식 요소를 추가  
-    li.appendChild(span);
-    li.appendChild(delBtn);
-    li.appendChild(backBtn);
-    li.id = newId;
-    doneList.appendChild(li);
-
-    const doneObj = {
-        text: text,
-        id: newId
-    };
-    dones.push(doneObj);
-    saveDones();
+    return paintItem;
 }
 
 function handleSubmit(event) {
     event.preventDefault();
     const currentValue = toDoInput.value;
-    paintToDo(currentValue);
+    itemPaintFactory(toDoList, TODOS_LS)(currentValue);
     toDoInput.value = "";
 }
 
@@ -133,14 +107,14 @@ function loadToDos() {
         // JSON.parse : string을 Object로 바꿔줌 
         const parsedToDos = JSON.parse(loadedToDos);
         parsedToDos.forEach(function (toDo) {
-            paintToDo(toDo.text);
+            itemPaintFactory(toDoList, TODOS_LS)(toDo.text);
         });
     }
     const loadedDones = localStorage.getItem(DONES_LS);
     if (loadedDones !== null) {
         const parsedDones = JSON.parse(loadedDones);
         parsedDones.forEach(function (done) {
-            paintDone(done.text);
+            itemPaintFactory(doneList, DONES_LS)(done.text);
         });
     }
 }
