@@ -8,7 +8,6 @@
 - Javascript
 
 # 💻 Reference
-[노마드코더]https://nomadcoders.co/javascript-for-beginners/lobby
-
+[노마드코더](https://nomadcoders.co/javascript-for-beginners/lobby)
 
 
